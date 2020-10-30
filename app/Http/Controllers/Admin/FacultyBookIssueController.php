@@ -10,6 +10,7 @@ use App\Admin\FacultyBT;
 use App\Admin\LibraryBook;
 use App\Admin\AcademicYear;
 use DB;
+use Datatables;
 
 class FacultyBookIssueController extends Controller
 {
@@ -18,9 +19,27 @@ class FacultyBookIssueController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $academicYear = AcademicYear::all();
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+              
+                $data = FacultyBT::where('session', $request->academic)->get();
+            }
+            else{
+                $data = FacultyBT::all();
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('action', 'auth.facultyBookIssue.action')
+            ->rawColumns(['action'])
+            ->addIndexColumn()
+            ->make(true);
+        }
         return view('auth.facultyBookIssue.index', compact('academicYear'));
     }
 

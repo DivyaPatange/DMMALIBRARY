@@ -12,6 +12,7 @@ use App\Admin\StudentBookIssue;
 use App\Admin\StudentBookIssueDate;
 use Redirect;
 use DB;
+use Datatables;
 
 class BookTransactionController extends Controller
 {
@@ -20,11 +21,32 @@ class BookTransactionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bookTransaction = BookTransaction::all();
         $academicYear = AcademicYear::all();
-        return view('auth.bookTransaction.index', compact('bookTransaction', 'academicYear'));
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+              
+                $data = DB::table('book_transactions')
+                ->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'book_transactions.BT_no')
+                ->select('book_transactions.*', 'student_b_t_s.name', 'student_b_t_s.session')->where('student_b_t_s.session', $request->academic)->get();
+            }
+            else{
+                $data = DB::table('book_transactions')
+                ->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'book_transactions.BT_no')
+                ->select('book_transactions.*', 'student_b_t_s.name');
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('action', 'auth.bookTransaction.action')
+            ->rawColumns(['name', 'action'])
+            ->addIndexColumn()
+            ->make(true);
+        }
+        return view('auth.bookTransaction.index', compact('academicYear'));
     }
 
     /**
@@ -374,7 +396,7 @@ class BookTransactionController extends Controller
             $array[] = $l;
         }
         $lastIssueBook = end($array);
-        $date = date('2020/11/11 5:45:00');
+        $date = date('Y/m/d H:i:s');
         $increment_date = strtotime("+7 day", strtotime($date));  
         $expected_date = date("Y-m-d", $increment_date);
         $renewBook = new StudentBookIssueDate();

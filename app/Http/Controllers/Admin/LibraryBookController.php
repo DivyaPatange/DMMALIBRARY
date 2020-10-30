@@ -82,14 +82,6 @@ class LibraryBookController extends Controller
         $libraryBook->receipt_date = $request->receipt_date;
         $libraryBook->scheme = $request->scheme;
         $libraryBook->status = $request->status;
-        if($request->status == "Available")
-        {
-            $libraryBook->book_status = 1;
-        }
-        if($request->status == "Not Available")
-        {
-            $libraryBook->book_status = 0;
-        }
         $libraryBook->department = $request->department;
         $libraryBook->medium = $request->medium;
         $libraryBook->remark = $request->remark;
@@ -169,14 +161,6 @@ class LibraryBookController extends Controller
         $libraryBook->receipt_date = $request->receipt_date;
         $libraryBook->scheme = $request->scheme;
         $libraryBook->status = $request->status;
-        if($request->status == "Available")
-        {
-            $libraryBook->book_status = 1;
-        }
-        if($request->status == "Not Available")
-        {
-            $libraryBook->book_status = 0;
-        }
         $libraryBook->department = $request->department;
         $libraryBook->medium = $request->medium;
         $libraryBook->remark = $request->remark;

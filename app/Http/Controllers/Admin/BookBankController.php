@@ -8,6 +8,7 @@ use App\Admin\BookBank;
 use App\Admin\StudentBT;
 use App\Admin\LibraryBook;
 use App\Admin\AcademicYear;
+use Datatables;
 
 class BookBankController extends Controller
 {
@@ -16,11 +17,33 @@ class BookBankController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bookBank = StudentBT::where('book_bank', 1)->get();
+        
         $academicYear = AcademicYear::all();
-        return view('auth.bookBank.index', compact('bookBank', 'academicYear'));
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+                $data = StudentBT::where('book_bank', 1)->where('session', $request->academic)->get();
+            }
+            else{
+                $data = StudentBT::where('book_bank', 1)->get();
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('action', function($data){
+                    $button = '<button data-id="'.$data->id.'" class="btn issueBook btn-info btn-circle">
+                    <i class="fas fa-eye"></i>
+                  </button>';
+                return $button;
+            })
+            ->rawColumns(['action'])
+            ->addIndexColumn()
+            ->make(true);
+        }
+        return view('auth.bookBank.index', compact('academicYear'));
     }
 
     /**

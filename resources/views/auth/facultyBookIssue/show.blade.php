@@ -109,7 +109,7 @@
             <td>{{ ++$key }}</td>
             <td>{{ $b->book_no }}</td>
             <?php
-              $issueDates = DB::table('faculty_book_issue_dates')->where('faculty_book_issue_id', $b->id)->get();
+              $issueDates = DB::table('faculty_book_issue_dates')->where('faculty_book_issue_id', $b->id)->orderBy('id', 'ASC')->get();
             ?>
             <td>
             <?php

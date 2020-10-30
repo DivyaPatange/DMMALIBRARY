@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Admin\FacultyBT;
 use App\Admin\AcademicYear;
+use Datatables;
 
 class FacultyBTCardController extends Controller
 {
@@ -14,11 +15,30 @@ class FacultyBTCardController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $academicYear = AcademicYear::all();
-        $facultyBT = FacultyBT::all();
-        return view('auth.facultyBTCard.index', compact('facultyBT', 'academicYear'));
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+                $data = FacultyBT::where('session', $request->academic)->get();
+            }
+            else{
+                $data = FacultyBT::all();
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('session', function(FacultyBT $facultyBT){
+                return '('.$facultyBT->faculty_session->from_academic_year.') - ('.$facultyBT->faculty_session->to_academic_year.')';
+            })
+            ->addColumn('action', 'auth.facultyBTCard.action')
+            ->rawColumns(['session', 'action'])
+            ->addIndexColumn()
+            ->make(true);
+        }
+        return view('auth.facultyBTCard.index', compact( 'academicYear'));
     }
 
     /**

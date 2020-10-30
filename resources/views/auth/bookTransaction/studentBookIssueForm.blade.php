@@ -10,13 +10,13 @@
 <div class="container-fluid">
   @if ($message = Session::get('success'))
   <div class="alert alert-success alert-block mt-4">
-    <button type="button" class="close" data-dismiss="alert">×</button>	
+    <button type="button" class="close" data-dismiss="alert">×</button> 
           <strong>{{ $message }}</strong>
   </div>
   @endif
   @if ($message = Session::get('danger'))
   <div class="alert alert-danger alert-block mt-4">
-    <button type="button" class="close" data-dismiss="alert">×</button>	
+    <button type="button" class="close" data-dismiss="alert">×</button> 
           <strong>{{ $message }}</strong>
   </div>
   @endif
@@ -95,7 +95,7 @@
                 <td>{{ $book->book_no }}</td>
                 <?php
                     $book_name = DB::table('library_books')->where('book_no', $book->book_no)->first();
-                    $issueDates = DB::table('student_book_issue_dates')->where('student_book_issue_id', $book->id)->get();
+                    $issueDates = DB::table('student_book_issue_dates')->where('student_book_issue_id', $book->id)->orderBy('id', 'ASC')->get();
                 ?>
                 <td>
                 
@@ -236,54 +236,54 @@ $(document).ready(function () {
 <script>
 $(document).on('click', '.update', function(){
     var $row = $(this).closest("tr");
-		var issueID = $row.find(".update").data('id');
-		var return_date = $row.find(".end_date").val();
+    var issueID = $row.find(".update").data('id');
+    var return_date = $row.find(".end_date").val();
     // alert(return_date);
     var book_status = [];
-		// Initializing array with Checkbox checked values
-		$row.find("input[name='book_status']:checked").each(function(){
-			book_status.push(this.value);
-		});
+    // Initializing array with Checkbox checked values
+    $row.find("input[name='book_status']:checked").each(function(){
+      book_status.push(this.value);
+    });
     
-			// alert(book_status);
+      // alert(book_status);
     if(issueID != ''){
-		$.ajax({
-			url: "{{ route('admin.studentBookIssue.update') }}",
-			method: "POST",
-			data: {issueID:issueID, return_date:return_date, book_status:book_status},
-			success: function(data){
+    $.ajax({
+      url: "{{ route('admin.studentBookIssue.update') }}",
+      method: "POST",
+      data: {issueID:issueID, return_date:return_date, book_status:book_status},
+      success: function(data){
         Swal.fire(
           'Book Returned Successfully!',
           )
         setTimeout(() => {
             location.reload();
         }, 1000);
-			}
-		});
-		}
+      }
+    });
+    }
 });
 </script>
 <script>
 $(document).on('click', '.renew', function(){
     var $row = $(this).closest("tr");
     // $row.find(".nr").
-		var issueID = $row.find(".renew").data('id');
+    var issueID = $row.find(".renew").data('id');
     // alert(issueID);
     if(issueID != ''){
-		$.ajax({
-			url: "{{ route('admin.studentBookIssue.renew') }}",
-			method: "POST",
-			data: {issueID:issueID},
-			success: function(data){
+    $.ajax({
+      url: "{{ route('admin.studentBookIssue.renew') }}",
+      method: "POST",
+      data: {issueID:issueID},
+      success: function(data){
         Swal.fire(
           'Book Renew Successfully!',
           )
           setTimeout(() => {
               location.reload();
           }, 2000);
-			}
-		});
-		}
+      }
+    });
+    }
 });
 </script>
 @endsection

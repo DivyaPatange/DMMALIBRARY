@@ -8,6 +8,8 @@ use App\Admin\LibraryAccession;
 use DateTime;
 use App\Admin\StudentBT;
 use App\Admin\AcademicYear;
+use Datatables;
+use DB;
 
 class LibraryAccessionController extends Controller
 {
@@ -16,9 +18,49 @@ class LibraryAccessionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // dd($libraryAccession);
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+              
+                $data = DB::table('library_accessions')->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'library_accessions.BT_no')
+                ->select('library_accessions.*', 'student_b_t_s.name')->where('start_time', 'LIKE', $request->academic.'%')->get();
+            }
+            else{
+                $data = DB::table('library_accessions')->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'library_accessions.BT_no')
+                ->select('library_accessions.*', 'student_b_t_s.name');
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('end_time', function($data){
+                if(!$data->end_time)
+                {
+                    $button = '<input type="datetime-local"  class="form-control form-control-user end_time" name="end_time" placeholder="End Time" />';
+                }
+                else{
+                    $button = $data->end_time;
+                }
+                return $button;
+            })
+            ->addColumn('action', function($data){
+                if(!$data->end_time)
+                {
+                    $button = '<button class="btn btn-warning btn-circle submit" data-id="'.$data->id.'" >
+                    <i class="fas fa-edit"></i>
+                  </button>';
+                }
+                else{
+                    $button = 'Updated';
+                }
+                return $button;
+            })
+            ->rawColumns(['action', 'end_time'])
+            ->addIndexColumn()
+            ->make(true);
+        }
         return view('auth.libraryAccession.index');
     }
 

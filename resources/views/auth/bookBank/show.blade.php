@@ -21,7 +21,7 @@
   </div>
   @endif
   <!-- Page Heading -->
-  <h1 class="h3 mb-2 text-gray-800">Book Bank Book Issue</h1>
+  <h1 class="h3 mb-2 text-gray-800">Book Issue</h1>
   <div class="row justify-content-center">
     <div class="col-lg-6">
       <!-- Basic Card Example -->
@@ -241,11 +241,11 @@ $(document).on('click', '.update', function(){
 			data: {issueID:issueID, return_date:return_date, book_status:book_status},
 			success: function(data){
         Swal.fire(
-          'Record Updated Successfully!',
+          'Book Returned Successfully!',
           )
-          setTimeout(() => {
-              location.reload();
-          }, 2000);
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
 			}
 		});
 		}

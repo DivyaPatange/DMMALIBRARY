@@ -44,7 +44,7 @@
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered" id="data_table" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>Sr. No.</th>
@@ -61,7 +61,7 @@
                 <th>Issue Book</th>
             </tr>
           </tfoot>
-          <tbody id="book_bank">
+          <tbody>
           </tbody>
         </table>
       </div>
@@ -77,60 +77,37 @@
 
 <!-- Page level custom scripts -->
 <script src="{{ asset('adminAsset/js/demo/datatables-demo.js') }}"></script>
-<script>
-$(document).ready(function() {
-        $('#dataTable').DataTable();
-    } );
-</script>
 <script type="text/javascript">
-function loadContent() {
-  var query = document.getElementById("academic_year").value;
-        // alert(query);
-        $.ajax({
-            // assign a controller function to perform search action - route name is search
-            url:"{{ route('admin.facultyRecord') }}",
-            // since we are getting data methos is assigned as GET
-            type:"GET",
-            // data are sent the server
-            data:{'academic_year':query},
-            // if search is succcessfully done, this callback function is called
-            success:function (data) {
-                // print the search results in the div called country_list(id)
-                $('#book_bank').html(data);
-            }
-        })
-}
-window.onload = loadContent;
-</script>
-<script>
-  $(document).ready(function () {
-    // keyup function looks at the keys typed on the search box
-    $('#academic_year').on('change',function() {
-        // the text typed in the input field is assigned to a variable 
-        var query = $(this).val();
-        
-        $.ajax({
-            // assign a controller function to perform search action - route name is search
-            url:"{{ route('admin.facultyRecord') }}",
-            // since we are getting data methos is assigned as GET
-            type:"GET",
-            // data are sent the server
-            data:{'academic_year':query},
-            // if search is succcessfully done, this callback function is called
-            success:function (data) {
-                // print the search results in the div called country_list(id)
-                $('#book_bank').html(data);
-            }
-        })
-
+$(document).ready(function(){
+  fetch_data();
+  function fetch_data(academic = '')
+  {
+    // alert(academic_year = '');
+    $('#data_table').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: "{{ route('admin.facultyBookIssue.index') }}",
+      data: {academic:academic}
+    },
+    columns: [
+    { data: 'id', name: 'id' },
+    { data: 'BT_no', name: 'BT_no' },
+    { data: 'name', name: 'name' },
+    {data: 'action', name: 'action', orderable: false},
+    ],
+    order: [[0, 'asc']],
     });
-  });
-  </script>
-  <script>
-  $("#book_bank").on("click",".issueBook",function(){
-        let deleteButton = $(this);
-        let id = deleteButton.data('id');
-        window.location.href="/admin/facultyBookIssue/"+id;
-  });
-  </script>
+  }
+  $('#academic_year').change(function(){
+  var academic_id = $('#academic_year').val();
+//  alert(academic_id);
+
+  $('#data_table').DataTable().destroy();
+ 
+  fetch_data(academic_id);
+ });
+  
+});
+</script>
 @endsection

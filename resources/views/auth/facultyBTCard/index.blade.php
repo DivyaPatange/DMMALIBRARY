@@ -1,7 +1,7 @@
 @extends('auth.authLayouts.main')
 @section('title', 'Faculty BT Card')
 @section('customcss')
-
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <link href="{{ asset('adminAsset/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 @endsection
 @section('content')
@@ -75,11 +75,27 @@
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
     <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary">Faculty BT Card List</h6>
+    <div class="row">
+        <div class="col-md-8">
+          <h6 class="m-0 font-weight-bold text-primary">Faculty BT Card List</h6>
+        </div>
+        <div class="col-md-4">
+          <?php
+              $date = date('Y-m-d');
+          ?>
+          <select class="form-control form-control-user @error('academic_year') is-invalid @enderror" name="academic_year" id="academic_year">
+            <option value="">- Select Academic Year -</option>
+            @foreach($academicYear as $a)
+            <option value="{{ $a->id }}" @if (($date >= $a->from_academic_year) && ($date <= $a->to_academic_year)) selected @endif
+  >({{ $a->from_academic_year }}) - ({{ $a->to_academic_year }})</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered" id="data_table" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>Sr. No.</th>
@@ -99,33 +115,7 @@
             </tr>
           </tfoot>
           <tbody>
-          @foreach($facultyBT as $key => $f)
-            <tr>
-              <td>{{ ++$key }}</td>
-              <td>{{ $f->BT_no }}</td>
-              <td>{{ $f->name }}</td>
-              <td>
-              <?php
-                 $session = DB::table('academic_years')->where('id', $f->session)->first();
-              ?>
-              @if(isset($session) && !empty($session))
-              ({{ $session->from_academic_year }}) - ({{ $session->to_academic_year }})
-              @endif
-              </td>
-              <td>
-                <a href="{{ route('admin.faculty-bt-card.edit', $f->id) }}" class="btn btn-warning btn-circle">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a href="javascript:void(0)" onclick="$(this).parent().find('form').submit()" class="btn btn-danger btn-circle">
-                  <i class="fas fa-trash"></i>
-                </a>
-                <form action="{{ route('admin.faculty-bt-card.destroy', $f->id) }}" method="post">
-                  @method('DELETE')
-                  <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                </form>
-              </td>
-            </tr>
-          @endforeach
+         
           </tbody>
         </table>
       </div>
@@ -142,8 +132,37 @@
 <!-- Page level custom scripts -->
 <script src="{{ asset('adminAsset/js/demo/datatables-demo.js') }}"></script>
 <script>
-$(document).ready(function() {
-        $('#dataTable').DataTable();
-    } );
+$(document).ready(function(){
+  fetch_data();
+  function fetch_data(academic = '')
+  {
+    // alert(academic_year = '');
+    $('#data_table').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: "{{ route('admin.faculty-bt-card.index') }}",
+      data: {academic:academic}
+    },
+    columns: [
+    { data: 'id', name: 'id' },
+    { data: 'BT_no', name: 'BT_no' },
+    { data: 'name', name: 'name' },
+    { data: 'session', name: 'session' },
+    {data: 'action', name: 'action', orderable: false},
+    ],
+    order: [[0, 'asc']],
+    });
+  }
+  $('#academic_year').change(function(){
+  var academic_id = $('#academic_year').val();
+//  alert(academic_id);
+
+  $('#data_table').DataTable().destroy();
+ 
+  fetch_data(academic_id);
+ });
+  
+});
 </script>
 @endsection

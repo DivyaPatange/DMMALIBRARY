@@ -44,14 +44,13 @@
                                     @enderror
                                 </div>
                             </div>
-                            
                             <div class="col-md-6">
                                 <div class="form-group ">
                                     <label>Class</label>
-                                    <select class="form-control form-control-user @error('class') is-invalid @enderror" name="class" >
+                                    <select class="form-control form-control-user @error('class') is-invalid @enderror" name="class" id="exampleInputName">
                                         <option value="">- Select Class -</option>
                                         @foreach($course as $c)
-                                        <option value="{{ $c->id }}" {{ ($c->id == $studentBT->class) ? 'selected=selected' : '' }}>{{ $c->course_name }}</option>
+                                        <option value="{{ $c->id }} " {{ ($c->id == $studentBT->class) ? 'selected=selected' : '' }}>{{ $c->course_name }}</option>
                                         @endforeach
                                     </select>
                                     @error('course')

@@ -8,6 +8,8 @@ use App\Admin\ComputerAccession;
 use App\Admin\Computer;
 use App\Admin\StudentBT;
 use App\Admin\AcademicYear;
+use DB;
+use Datatables;
 
 class ComputerAccessionController extends Controller
 {
@@ -16,9 +18,52 @@ class ComputerAccessionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $computer = Computer::all();
+        if(request()->ajax()) 
+        {
+            // dd($request->academic);
+            if($request->academic)
+            {
+              
+                $data = DB::table('computer_accessions')->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'computer_accessions.BT_no')
+                ->join('computers', 'computers.id', '=', 'computer_accessions.system_no')
+                ->select('computer_accessions.id','computer_accessions.start_time','computer_accessions.end_time','computer_accessions.BT_no', 'student_b_t_s.name', 'computers.system_no')->where('start_time', 'LIKE', $request->academic.'%')->get();
+            }
+            else{
+                $data = DB::table('computer_accessions')->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'computer_accessions.BT_no')
+                ->join('computers', 'computers.id', '=', 'computer_accessions.system_no')
+                ->select('computer_accessions.id','computer_accessions.start_time','computer_accessions.end_time','computer_accessions.BT_no', 'student_b_t_s.name', 'computers.system_no');
+                // dd($data);
+            }
+            return datatables()->of($data)
+            ->addColumn('end_time', function($data){
+                if(!$data->end_time)
+                {
+                    $button = '<input type="datetime-local" class="form-control form-control-user end_time" name="end_time" placeholder="End Time">';
+                }
+                else{
+                    $button = $data->end_time;
+                }
+                return $button;
+            })
+            ->addColumn('action', function($data){
+                if(!$data->end_time)
+                {
+                    $button = '<button class="btn btn-warning btn-circle submit" data-id="'.$data->id.'" >
+                    <i class="fas fa-edit"></i>
+                  </button>';
+                }
+                else{
+                    $button = 'Updated';
+                }
+                return $button;
+            })
+            ->rawColumns(['action', 'end_time'])
+            ->addIndexColumn()
+            ->make(true);
+        }
         return view('auth.computerAccession.index', compact('computer'));
     }
 

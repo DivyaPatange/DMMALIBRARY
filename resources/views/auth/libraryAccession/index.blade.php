@@ -88,7 +88,7 @@
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered" id="data_table" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>Sr. No.</th>
@@ -158,11 +158,11 @@ $("#accession_record").on("click",".submit",function(){
 			success:function(data)
 			{
         Swal.fire(
-          'Library Accession Record Updated Successfully!',
+          'End Time Mentioned Successfully!',
           )
-          setTimeout(() => {
-              location.reload();
-          }, 2000);
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
 
 			}
 		});
@@ -174,55 +174,42 @@ $("#accession_record").on("click",".submit",function(){
 
 <!-- Page level custom scripts -->
 <script src="{{ asset('adminAsset/js/demo/datatables-demo.js') }}"></script>
-<script>
-$(document).ready(function() {
-        $('#dataTable').DataTable();
-    } );
-</script>
-<script type="text/javascript">
-function loadContent() {
-  var query = document.getElementById("accession_date").value;
-        // alert(query);
-        $.ajax({
-            // assign a controller function to perform search action - route name is search
-            url:"{{ route('admin.searchLibraryAccessionRecord') }}",
-            // since we are getting data methos is assigned as GET
-            type:"GET",
-            // data are sent the server
-            data:{'accession_date':query},
-            // if search is succcessfully done, this callback function is called
-            success:function (data) {
-                // print the search results in the div called country_list(id)
-                $('#accession_record').html(data);
-            }
-        })
-}
-window.onload = loadContent;
-</script>
-<script>
-  $(document).ready(function () {
-    // keyup function looks at the keys typed on the search box
-    $('#accession_date').on('change',function() {
-        // the text typed in the input field is assigned to a variable 
-        var query = $(this).val();
-        
-        $.ajax({
-            // assign a controller function to perform search action - route name is search
-            url:"{{ route('admin.searchLibraryAccessionRecord') }}",
-            // since we are getting data methos is assigned as GET
-            type:"GET",
-            // data are sent the server
-            data:{'accession_date':query},
-            // if search is succcessfully done, this callback function is called
-            success:function (data) {
-                // print the search results in the div called country_list(id)
-                $('#accession_record').html(data);
-            }
-        })
 
+<script type="text/javascript">
+$(document).ready(function(){
+  fetch_data();
+  function fetch_data(academic = '')
+  {
+    // alert(academic_year = '');
+    $('#data_table').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: "{{ route('admin.libraryAccession.index') }}",
+      data: {academic:academic}
+    },
+    columns: [
+    { data: 'id', name: 'id' },
+    { data: 'BT_no', name: 'BT_no' },
+    { data: 'name', name: 'name' },
+    { data: 'start_time', name: 'start_time' },
+    { data: 'end_time', name: 'end_time' , orderable: false},
+    {data: 'action', name: 'action', orderable: false},
+    ],
+    order: [[0, 'asc']],
     });
-  });
-  </script>
+  }
+  $('#accession_date').change(function(){
+  var academic_id = $('#accession_date').val();
+//  alert(academic_id);
+
+  $('#data_table').DataTable().destroy();
+ 
+  fetch_data(academic_id);
+ });
+  
+});
+</script>
 <script>
 $(document).ready(function () {
     // keyup function looks at the keys typed on the search box
