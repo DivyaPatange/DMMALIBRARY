@@ -60,14 +60,14 @@ class FacultyBTCardController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'BT_no' => 'required|unique:faculty_b_t_s',
             'name' => 'required', 
             'session' => 'required',
         ]);
-        $id = mt_rand(100000,999999);
         $facultyBT = new FacultyBT();
+        $facultyBT->BT_no = $request->BT_no;
         $facultyBT->name = $request->name;
         $facultyBT->session = $request->session;
-        $facultyBT->BT_no = "BTF".$id;
         $facultyBT->save();
         return redirect('/admin/faculty-bt-card')->with('success', 'Faculty BT Card added successfully!');
     }
@@ -106,10 +106,12 @@ class FacultyBTCardController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'BT_no' => 'unique:faculty_b_t_s,BT_no,'.$id,
             'name' => 'required',
             'session' => 'required',
         ]);
         $facultyBT = FacultyBT::findorfail($id);
+        $facultyBT->BT_no = $request->BT_no;
         $facultyBT->name = $request->name;
         $facultyBT->session = $request->session;
         $facultyBT->update($request->all());

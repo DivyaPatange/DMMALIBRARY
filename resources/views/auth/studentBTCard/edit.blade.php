@@ -35,6 +35,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group ">
+                                    <label>BT Card No.</label>
+                                    <input type="text" class="form-control form-control-user @error('BT_no') is-invalid @enderror" name="BT_no" id="exampleInputName" placeholder="Enter BT Card No." value="{{ $studentBT->BT_no }}">
+                                    @error('BT_no')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group ">
                                     <label>Name</label>
                                     <input type="text" class="form-control form-control-user @error('name') is-invalid @enderror" name="name" id="exampleInputName" placeholder="Enter Name" value="{{ $studentBT->name }}">
                                     @error('name')
@@ -59,6 +70,17 @@
                                     </span>
                                     @enderror
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="form-group ">
+                                  <label>Class Year</label>
+                                  <input type="text" class="form-control form-control-user @error('class_year') is-invalid @enderror" name="class_year" id="exampleInputName" placeholder="Enter Class Year" value="{{ $studentBT->class_year }}">
+                                  @error('class_year')
+                                  <span class="invalid-feedback" role="alert">
+                                      <strong>{{ $message }}</strong>
+                                  </span>
+                                  @enderror
+                              </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group ">
@@ -91,6 +113,12 @@
                                     </span>
                                     @enderror
                                 </div>
+                            </div>
+                            <div class="col-md-4">
+                            <div class="form-check">
+                            <input type="checkbox" name="book_bank" class="form-check-input" id="exampleCheck1" {{ ($studentBT->book_bank) ? 'checked=checked' : '' }} value="1">
+                            <label class="form-check-label" for="exampleCheck1">Book Bank</label>
+                            </div>
                             </div>
                         </div>
                         <div class="row">

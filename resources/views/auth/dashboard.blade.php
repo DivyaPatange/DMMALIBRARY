@@ -21,7 +21,7 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Books</div>
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pustak Pedhi Books</div>
                       <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($totalBook) }}</div>
                     </div>
                     <div class="col-auto">
@@ -37,7 +37,7 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Issue Book</div>
+                      <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Pustak Pedhi Issue Book</div>
                       <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($issueBook) }}</div>
                     </div>
                     <div class="col-auto">
@@ -54,8 +54,58 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Available Book</div>
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pustak Pedhi Available Book</div>
                       <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($totalBook)-count($issueBook) }}</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">General Books</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($generalBook) }}</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+             <!-- Earnings (Monthly) Card Example -->
+             <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">General Issue Book</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($generalIssueBook) }}</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Earnings (Monthly) Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+              <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">General Available Book</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count($generalBook)-count($generalIssueBook) }}</div>
                     </div>
                     <div class="col-auto">
                       <i class="fas fa-calendar fa-2x text-gray-300"></i>

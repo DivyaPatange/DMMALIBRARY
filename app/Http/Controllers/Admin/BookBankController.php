@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Admin\BookBank;
 use App\Admin\StudentBT;
 use App\Admin\LibraryBook;
+use App\Admin\StudentBook;
 use App\Admin\AcademicYear;
 use Datatables;
 
@@ -33,13 +34,19 @@ class BookBankController extends Controller
                 // dd($data);
             }
             return datatables()->of($data)
+            ->addColumn('course_name', function($row){
+                return $row->course->course_name;
+            })
+            ->addColumn('department', function(StudentBT $studentBT){
+                return $studentBT->departments->department;
+            })
             ->addColumn('action', function($data){
                     $button = '<button data-id="'.$data->id.'" class="btn issueBook btn-info btn-circle">
                     <i class="fas fa-eye"></i>
                   </button>';
                 return $button;
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'course_name', 'department'])
             ->addIndexColumn()
             ->make(true);
         }
@@ -67,34 +74,69 @@ class BookBankController extends Controller
         $request->validate([
             'book_code' => 'required',
         ]);
-        $checkBookAvailability = LibraryBook::where('book_no', $request->book_code)->first();
-        $studentBT = StudentBT::where('BT_no', $request->BT_no)->first();
-            // dd($studentBT);
-        $session = AcademicYear::where('id', $studentBT->session)->first();
-        if($checkBookAvailability->book_status == 1)
-        {
-            
-            $date = date('Y/m/d H:i:s');
-            if(($date >= $session->from_academic_year) && ($date <= $session->to_academic_year))
+        if($request->category == "p"){
+            $checkBookAvailability = LibraryBook::where('book_no', $request->book_code)->first();
+            $studentBT = StudentBT::where('BT_no', $request->BT_no)->first();
+                // dd($studentBT);
+            $session = AcademicYear::where('id', $studentBT->session)->first();
+            if($checkBookAvailability->book_status == 1)
             {
-                $increment_date = strtotime("+1 year", strtotime($date));  
-                $expected_date = date("Y-m-d", $increment_date);
-                $bookBank = new BookBank();
-                $bookBank->BT_no = $request->BT_no;
-                $bookBank->book_no = $request->book_code;
-                $bookBank->issue_date = $date;
-                $bookBank->expected_return_date = $expected_date;
-                $bookBank->save();
-                $bookStatus = LibraryBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
-                return redirect()->route('admin.bookBank.show', $studentBT->id)->with('success', 'Book Issue Successfully');
+                
+                $date = date('Y/m/d H:i:s');
+                if(($date >= $session->from_academic_year) && ($date <= $session->to_academic_year))
+                {
+                    $increment_date = strtotime("+1 year", strtotime($date));  
+                    $expected_date = date("Y-m-d", $increment_date);
+                    $bookBank = new BookBank();
+                    $bookBank->BT_no = $request->BT_no;
+                    $bookBank->book_no = $request->book_code;
+                    $bookBank->category = $request->category;
+                    $bookBank->issue_date = $date;
+                    $bookBank->expected_return_date = $expected_date;
+                    $bookBank->save();
+                    $bookStatus = LibraryBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                    return redirect()->route('admin.bookBank.show', $studentBT->id)->with('success', 'Book Issue Successfully');
+                }
+                else{
+                    return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'BT Card is expired!');
+                }
+
             }
             else{
-                return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'BT Card is expired!');
+                return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'Book is not available!');
             }
-
         }
         else{
-            return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'Book is not available!');
+            $checkBookAvailability = StudentBook::where('book_no', $request->book_code)->first();
+            $studentBT = StudentBT::where('BT_no', $request->BT_no)->first();
+                // dd($studentBT);
+            $session = AcademicYear::where('id', $studentBT->session)->first();
+            if($checkBookAvailability->book_status == 1)
+            {
+                
+                $date = date('Y/m/d H:i:s');
+                if(($date >= $session->from_academic_year) && ($date <= $session->to_academic_year))
+                {
+                    $increment_date = strtotime("+1 year", strtotime($date));  
+                    $expected_date = date("Y-m-d", $increment_date);
+                    $bookBank = new BookBank();
+                    $bookBank->BT_no = $request->BT_no;
+                    $bookBank->book_no = $request->book_code;
+                    $bookBank->category = $request->category;
+                    $bookBank->issue_date = $date;
+                    $bookBank->expected_return_date = $expected_date;
+                    $bookBank->save();
+                    $bookStatus = StudentBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                    return redirect()->route('admin.bookBank.show', $studentBT->id)->with('success', 'Book Issue Successfully');
+                }
+                else{
+                    return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'BT Card is expired!');
+                }
+
+            }
+            else{
+                return redirect()->route('admin.bookBank.show', $studentBT->id)->with('danger', 'Book is not available!');
+            }
         }
     }
 
@@ -107,8 +149,9 @@ class BookBankController extends Controller
     public function show($id)
     {
         $studentBT = StudentBT::findorfail($id);
-        $bookBank = BookBank::where('BT_no', $studentBT->BT_no)->get();
-        return view('auth.bookBank.show', compact('studentBT','bookBank'));
+        $bookBank = BookBank::where('BT_no', $studentBT->BT_no)->where('category', '=', 'p')->get();
+        $generalBookBank = BookBank::where('BT_no', $studentBT->BT_no)->where('category', '=', 'g')->get();
+        return view('auth.bookBank.show', compact('studentBT','bookBank', 'generalBookBank'));
     }
 
     /**
@@ -137,12 +180,18 @@ class BookBankController extends Controller
     public function submit(Request $request)
     {
         $bookBank = BookBank::where('id', $request->issueID)->first();
-        $book = LibraryBook::where('book_no', $bookBank->book_no)->first();
         $book_status = $request->book_status;
         // dd($book_status);
         $foundjquery = "Not found";
         if(in_array('jQuery',$book_status)){
             $foundjquery = "found";
+        }
+        if($bookBank->category == "p")
+        {
+            $book = LibraryBook::where('book_no', $bookBank->book_no)->first();
+        }
+        else{
+            $book = StudentBook::where('book_no', $bookBank->book_no)->first();
         }
         if(in_array("poor", $book_status))
         {
@@ -179,7 +228,7 @@ class BookBankController extends Controller
         {
             $diff = strtotime($date2) - strtotime($date1); 
             $days = abs(round($diff / 86400));
-            $penaltyDays = 2 * $days;
+            $penaltyDays = 3 * $days;
         }
         else{
             $penaltyDays = 0;
@@ -195,7 +244,13 @@ class BookBankController extends Controller
         $studentBookReturn = BookBank::where('id', $request->issueID)->first();
         if($studentBookReturn->actual_return_date)
         {
-            $libraryBook = LibraryBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            if($studentBookReturn->category == "p")
+            {
+                $libraryBook = LibraryBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            }
+            else{
+                $libraryBook = StudentBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            }
         }
     }
 

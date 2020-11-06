@@ -9,7 +9,7 @@
             <div class="input-group">
               <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
               <div class="input-group-append"> -->
-                <a href="{{ route('search') }}" class="ml-auto"><button class="btn btn-primary" id="search" type="button">
+                <a href="{{ route('admin.search') }}" class="ml-auto"><button class="btn btn-primary" id="search" type="button">
                   <i class="fas fa-search fa-sm"></i>
                 </button></a>
               <!-- </div>

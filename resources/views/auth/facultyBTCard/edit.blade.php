@@ -35,6 +35,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group ">
+                                    <label>BT Card No.</label>
+                                    <input type="text" class="form-control form-control-user @error('BT_no') is-invalid @enderror" name="BT_no" id="exampleInputName" placeholder="Enter BT Card No." value="{{ $facultyBT->BT_no }}">
+                                    @error('BT_no')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group ">
                                     <label>Name</label>
                                     <input type="text" class="form-control form-control-user @error('name') is-invalid @enderror" name="name" id="exampleInputName" placeholder="Enter Name" value="{{ $facultyBT->name }}">
                                     @error('name')

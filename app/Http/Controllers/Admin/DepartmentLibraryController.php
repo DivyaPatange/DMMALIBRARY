@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Admin\DepartmentLibrary;
 use App\Admin\Department;
+use App\Admin\StudentBook;
 use App\Admin\LibraryBook;
 use Redirect;
 
@@ -43,22 +44,46 @@ class DepartmentLibraryController extends Controller
         $request->validate([
             'book_code' => 'required',
         ]);
-        $checkBookAvailability = LibraryBook::where('book_no', $request->book_code)->first();
-        if($checkBookAvailability->book_status == 1)
-        {
-            $departmentBook = new DepartmentLibrary();
-            $departmentBook->book_no = $request->book_code;
-            $departmentBook->department_id = $request->department_id;
-            $departmentBook->allocation_date = date('Y-m-d');
-            $departmentBook->save();
-            if($departmentBook->save())
+        if($request->category == "p"){
+            $checkBookAvailability = LibraryBook::where('book_no', $request->book_code)->first();
+            if($checkBookAvailability->book_status == 1)
             {
-                $changeBookStatus = LibraryBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                $departmentBook = new DepartmentLibrary();
+                $departmentBook->book_no = $request->book_code;
+                $departmentBook->department_id = $request->department_id;
+                $departmentBook->category = $request->category;
+                $departmentBook->allocation_date = date('Y-m-d');
+                $departmentBook->save();
+                if($departmentBook->save())
+                {
+                    $changeBookStatus = LibraryBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                }
+                return Redirect::back()->with('success', 'Book is allotted  to department');
             }
-            return Redirect::back()->with('success', 'Book is allotted  to department');
+            else{
+                return Redirect::back()->with('danger', 'Book is not available');
+            }
         }
-        else{
-            return Redirect::back()->with('danger', 'Book is not available');
+        if($request->category == "g")
+        {
+            $checkBookAvailability = StudentBook::where('book_no', $request->book_code)->first();
+            if($checkBookAvailability->book_status == 1)
+            {
+                $departmentBook = new DepartmentLibrary();
+                $departmentBook->book_no = $request->book_code;
+                $departmentBook->department_id = $request->department_id;
+                $departmentBook->category = $request->category;
+                $departmentBook->allocation_date = date('Y-m-d');
+                $departmentBook->save();
+                if($departmentBook->save())
+                {
+                    $changeBookStatus = StudentBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                }
+                return Redirect::back()->with('success', 'Book is allotted  to department');
+            }
+            else{
+                return Redirect::back()->with('danger', 'Book is not available');
+            }
         }
     }
 
@@ -110,7 +135,8 @@ class DepartmentLibraryController extends Controller
     public function viewDepartmentBook($id)
     {
         $department = Department::findorfail($id);
-        $departmentBook = DepartmentLibrary::where('department_id', $id)->get();
-        return view('auth.departmentLibrary.view', compact('department', 'departmentBook'));
+        $departmentBook = DepartmentLibrary::where('department_id', $id)->where('category', '=', 'p')->get();
+        $generalDepartmentBook = DepartmentLibrary::where('department_id', $id)->where('category', '=', 'g')->get();
+        return view('auth.departmentLibrary.view', compact('department', 'departmentBook', 'generalDepartmentBook'));
     }
 }

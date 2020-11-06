@@ -8,5 +8,5 @@ class DepartmentLibrary extends Model
 {
     protected $table = "department_libraries";
 
-    protected $fillable = ['department_id', 'book_no', 'allocation_date'];
+    protected $fillable = ['department_id', 'category', 'book_no', 'allocation_date'];
 }

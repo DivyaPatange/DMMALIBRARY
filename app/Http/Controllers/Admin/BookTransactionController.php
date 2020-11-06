@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Admin\BookTransaction;
 use App\Admin\StudentBT;
 use App\Admin\LibraryBook;
+use App\Admin\StudentBook;
+use App\Admin\Course;
+use App\Admin\Department;
 use App\Admin\AcademicYear;
 use App\Admin\StudentBookIssue;
 use App\Admin\StudentBookIssueDate;
@@ -37,7 +40,7 @@ class BookTransactionController extends Controller
             else{
                 $data = DB::table('book_transactions')
                 ->join('student_b_t_s', 'student_b_t_s.BT_no', '=', 'book_transactions.BT_no')
-                ->select('book_transactions.*', 'student_b_t_s.name');
+                ->select('book_transactions.*', 'student_b_t_s.name', 'student_b_t_s.session');
                 // dd($data);
             }
             return datatables()->of($data)
@@ -166,8 +169,12 @@ class BookTransactionController extends Controller
                     // concatenate output to the array
                     // $parentName = User::where('id', $row->parent_id)->first();
 
-                    
-                       $output .= $row->name;
+                        $class = Course::where('id', $row->class)->first();
+                        $department = Department::where('id', $row->department)->first();
+                       $output .= '<p><b>Student Name:- </b>'.$row->name.'</p>'. 
+                       '<p><b>Class:- </b>'.$class->course_name.'</p>'. 
+                       '<p><b>Class Year:- </b>'.$row->class_year.'</p>'. 
+                       '<p><b>Department:- </b>'.$department->department.'</p>';
                         
                         
                     }
@@ -209,8 +216,10 @@ class BookTransactionController extends Controller
                     // concatenate output to the array
                     // $parentName = User::where('id', $row->parent_id)->first();
 
-                    
-                       $output .= $row->book_name;
+                       $output .= '<p><b>Book Name:- </b>'.$row->book_name.'</p>'. 
+                       '<p><b>Author Name:- </b>'.$row->author_name.'</p>'. 
+                       '<p><b>Publication:- </b>'.$row->publication.'</p>'. 
+                       '<p><b>Department:- </b>'.$row->department.'</p>';
                         
                         
                     }
@@ -220,7 +229,7 @@ class BookTransactionController extends Controller
             
             else {
                 // if there's no matching results according to the input
-                $output .= 'No results';
+                $output .= '<p class="text-danger">No results</p>';
             }
             // return output result array
             return $output;
@@ -230,9 +239,11 @@ class BookTransactionController extends Controller
     public function studentBookIssueForm($id)
     {
         $BT_no = BookTransaction::findorfail($id);
-        $issueBook = StudentBookIssue::where('bookTransaction_id', $id)->get();
+        $studentBT = StudentBT::where('BT_no', $BT_no->BT_no)->first();
+        $issueBook = StudentBookIssue::where('bookTransaction_id', $id)->where('category', '=', 'p')->get();
+        $generalBook = StudentBookIssue::where('bookTransaction_id', $id)->where('category', '=', 'g')->get();
         // dd($issueBook);
-        return view('auth.bookTransaction.studentBookIssueForm', compact('BT_no', 'issueBook'));
+        return view('auth.bookTransaction.studentBookIssueForm', compact('BT_no', 'issueBook', 'generalBook', 'studentBT'));
     }
 
     public function studentBookIssueFormSubmit(Request $request)
@@ -240,6 +251,8 @@ class BookTransactionController extends Controller
         $request->validate([
             'book_code' => 'required',
         ]);
+        if($request->category == "p")
+        {
             $checkBookAvailability = LibraryBook::where('book_no', $request->book_code)->first();
             if($checkBookAvailability->book_status == 1)
             {
@@ -248,12 +261,13 @@ class BookTransactionController extends Controller
                 $date = date('Y/m/d H:i:s');
                 if(($date >= $session->from_academic_year) && ($date <= $session->to_academic_year))
                 {
-                    $increment_date = strtotime("+7 day", strtotime($date));
+                    $increment_date = strtotime("+10 day", strtotime($date));
                     $expected_date = date("Y-m-d", $increment_date);
                     // $bookTransaction->book_code = $request->book_code;
                     $issueBook = new StudentBookIssue();
                     $issueBook->bookTransaction_id = $request->BT_id;
                     $issueBook->book_no = $request->book_code;
+                    $issueBook->category = $request->category;
                     $issueBook->status = 1;
                     $issueBook->save();
                     if($issueBook->save())
@@ -274,13 +288,50 @@ class BookTransactionController extends Controller
             else{
                 return Redirect::back()->with('danger', 'Book is not available!');
             }
+        }
+        if($request->category == "g"){
+            $checkBookAvailability = StudentBook::where('book_no', $request->book_code)->first();
+            if($checkBookAvailability->book_status == 1)
+            {
+                $studentBT = StudentBT::where('BT_no', $request->BT_no)->first();
+                $session = AcademicYear::where('id', $studentBT->session)->first();
+                $date = date('Y/m/d H:i:s');
+                if(($date >= $session->from_academic_year) && ($date <= $session->to_academic_year))
+                {
+                    $increment_date = strtotime("+10 day", strtotime($date));
+                    $expected_date = date("Y-m-d", $increment_date);
+                    // $bookTransaction->book_code = $request->book_code;
+                    $issueBook = new StudentBookIssue();
+                    $issueBook->bookTransaction_id = $request->BT_id;
+                    $issueBook->book_no = $request->book_code;
+                    $issueBook->category = $request->category;
+                    $issueBook->status = 1;
+                    $issueBook->save();
+                    if($issueBook->save())
+                    {
+                        $issueDate = new StudentBookIssueDate();
+                        $issueDate->student_book_issue_id = $issueBook->id;
+                        $issueDate->issue_date = $date;
+                        $issueDate->expected_return_date = $expected_date;
+                        $issueDate->save();
+                    }
+                    $bookStatus = StudentBook::where('book_no', $request->book_code)->update(['book_status' => 0]);
+                    return Redirect::back()->with('success', 'Book Issue Successfully');
+                }
+                else{
+                    return Redirect::back()->with('danger', 'BT Card is expired!');
+                }
+            }
+            else{
+                return Redirect::back()->with('danger', 'Book is not available!');
+            }
+        }
         
     }
 
     public function studentBookIssueFormUpdate(Request $request)
     {
         $bookTransaction = StudentBookIssue::where('id', $request->issueID)->first();
-        $book = LibraryBook::where('book_no', $bookTransaction->book_no)->first();
         $lastIssueBookArray = StudentBookIssueDate::where('student_book_issue_id', $bookTransaction->id)->get();
         foreach($lastIssueBookArray as $l)
         {
@@ -291,6 +342,14 @@ class BookTransactionController extends Controller
         $foundjquery = "Not found";
         if(in_array('jQuery',$book_status)){
             $foundjquery = "found";
+        }
+
+        if($bookTransaction->category == "p")
+        {
+            $book = LibraryBook::where('book_no', $bookTransaction->book_no)->first();
+        }
+        if($bookTransaction->category == "g"){
+            $book =  StudentBook::where('book_no', $bookTransaction->book_no)->first();
         }
         if(in_array("poor", $book_status))
         {
@@ -338,53 +397,22 @@ class BookTransactionController extends Controller
         $bookTransaction = StudentBookIssue::where('id', $request->issueID)->update([
             'actual_return_date' => $request->return_date,
             'book_status' => $book_status,
-            'penalty' => ($penaltyA + $penaltyG + $penaltyPoor + $penaltyMissing + ($penaltyArray * 2)),
+            'penalty' => ($penaltyA + $penaltyG + $penaltyPoor + $penaltyMissing + ($penaltyArray * 3)),
         ]);
         $studentBookReturn = StudentBookIssue::where('id', $request->issueID)->first();
         if($studentBookReturn->actual_return_date)
         {
-            $libraryBook = LibraryBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            if($studentBookReturn->category == "p")
+            {
+                $libraryBook = LibraryBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            }
+            else{
+                $libraryBook = StudentBook::where('book_no', $studentBookReturn->book_no)->update(['book_status' => 1]);
+            }
         }
     }
 
-    public function bookTransactionRecord(Request $request)
-    {
-        if($request->ajax()) 
-        {
-            // select country name from database
-            $academicYear = AcademicYear::where('id', $request->academic_year)
-                ->first();
-            $data = BookTransaction::whereBetween('created_at', [$academicYear->from_academic_year, $academicYear->to_academic_year])->get();
-            // dd($data);        
-        
-            // declare an empty array for output
-            $output = '';
-            if (count($data)>0) {
-                // concatenate output to the array
-                // loop through the result array
-                foreach ($data as $key => $row){
-                    $studentBT = StudentBT::where('BT_no', $row->BT_no)->first();
-                       $output .= '<tr>'. 
-                       '<td>'.++$key.'</td>'.
-                       '<td>'.$row->BT_no.'</td>'. 
-                       '<td>'.$studentBT->name.'</td>'. 
-                       '<td>'.'<button data-id="'.$row->id.'" class="btn issueBook btn-info btn-circle">
-                       <i class="fas fa-eye"></i>
-                     </button></td>'.
-                       '</tr>';
-                    
-                }
-                // end of output
-            }
-            
-            else {
-                // if there's no matching results according to the input
-                $output .= 'No results';
-            }
-            // return output result array
-            return $output;
-        }
-    }
+   
 
 
     public function studentBookRenew(Request $request)
@@ -397,7 +425,7 @@ class BookTransactionController extends Controller
         }
         $lastIssueBook = end($array);
         $date = date('Y/m/d H:i:s');
-        $increment_date = strtotime("+7 day", strtotime($date));  
+        $increment_date = strtotime("+10 day", strtotime($date));  
         $expected_date = date("Y-m-d", $increment_date);
         $renewBook = new StudentBookIssueDate();
         $renewBook->student_book_issue_id = $issueBook->id;
@@ -416,4 +444,5 @@ class BookTransactionController extends Controller
         }
         $renewBook->save();
     }
+
 }

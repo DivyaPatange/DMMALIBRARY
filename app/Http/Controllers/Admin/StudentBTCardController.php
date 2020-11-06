@@ -48,11 +48,20 @@ class StudentBTCardController extends Controller
             ->addColumn('department', function(StudentBT $studentBT){
                 return $studentBT->departments->department;
             })
+            ->addColumn('book_bank', function(StudentBT $studentBT){
+                if($studentBT->book_bank == 1)
+                {
+                    return "Yes";
+                }
+                else{
+                    return "No";
+                }
+            })
             ->addColumn('session', function(StudentBT $studentBT){
                 return '('.$studentBT->sessions->from_academic_year.') - ('.$studentBT->sessions->to_academic_year.')';
             })
             ->addColumn('action', 'auth.studentBTCard.action')
-            ->rawColumns(['class', 'department', 'session', 'action'])
+            ->rawColumns(['class', 'department', 'session', 'action', 'book_bank'])
             ->addIndexColumn()
             ->make(true);
         }
@@ -80,16 +89,19 @@ class StudentBTCardController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'BT_no' => 'required|unique:student_b_t_s',
             'name' => 'required',
             'class' => 'required',
             'department' => 'required',
             'session' => 'required',
+            'class_year' => 'required',
         ]);
         $id = mt_rand(100000,999999);
         $studentBT = new StudentBT();
-        $studentBT->BT_no = "BTS".$id;
+        $studentBT->BT_no = $request->BT_no;
         $studentBT->name = $request->name;
         $studentBT->class = $request->class;
+        $studentBT->class_year = $request->class_year;
         $studentBT->department = $request->department;
         $studentBT->session = $request->session;
         if($request->book_bank){
@@ -136,15 +148,25 @@ class StudentBTCardController extends Controller
     {
         $studentBT = StudentBT::findorfail($id);
         $request->validate([
+            'BT_no' => 'required|unique:student_b_t_s,BT_no,'.$id,
             'name' => 'required',
             'class' => 'required',
             'department' => 'required',
             'session' => 'required',
+            'class_year' => 'required',
         ]);
+        $studentBT->BT_no = $request->BT_no;
         $studentBT->name = $request->name;
+        $studentBT->class_year = $request->class_year;
         $studentBT->class = $request->class;
         $studentBT->department = $request->department;
         $studentBT->session = $request->session;
+        if($request->book_bank){
+        $studentBT->book_bank = $request->book_bank;
+        }
+        else{
+            $studentBT->book_bank =  0;
+        }
         $studentBT->update($request->all());
         return redirect('/admin/student-bt-card')->with('success', 'BT Card updated successfully!');
     }
@@ -188,6 +210,7 @@ class StudentBTCardController extends Controller
             // })
             ->addColumn('action', 'auth.studentBTCard.action')
             ->rawColumns(['class', 'department', 'session', 'action'])
+            
             ->addIndexColumn()
             ->make(true);
         }
